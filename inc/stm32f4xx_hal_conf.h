@@ -88,6 +88,9 @@ extern "C" {
   #include "stm32f4xx_hal_uart.h"
 #endif
 
+#define PHY_READ_TO      0x0000FFFFU
+#define PHY_WRITE_TO     0x0000FFFFU
+
 #define assert_param(expr) ((void)0U)
 
 #ifdef __cplusplus

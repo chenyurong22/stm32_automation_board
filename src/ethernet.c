@@ -85,7 +85,15 @@ void ethernet_init(void)
     HAL_ETH_Init(&heth);
 
     for (uint32_t i = 0; i < ETH_RX_DESC_COUNT; i++) {
-        HAL_ETH_DescAssignMemory(&heth, i, eth_rx_buffer[i], NULL);
+        eth_dma_rx_desc[i].BackupAddr0 = (uint32_t)eth_rx_buffer[i];
+        if (i < ETH_RX_DESC_COUNT - 1) {
+            eth_dma_rx_desc[i].DESC3 = (uint32_t)&eth_dma_rx_desc[i + 1];
+        }
+    }
+    for (uint32_t i = 0; i < ETH_TX_DESC_COUNT; i++) {
+        if (i < ETH_TX_DESC_COUNT - 1) {
+            eth_dma_tx_desc[i].DESC3 = (uint32_t)&eth_dma_tx_desc[i + 1];
+        }
     }
 
     HAL_ETH_Start(&heth);
