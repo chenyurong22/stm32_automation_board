@@ -9,8 +9,13 @@ extern "C" {
 #define HSI_VALUE    16000000U
 #define LSE_VALUE    32768U
 #define LSI_VALUE    32000U
+#define VDD_VALUE    3300U
 
-#define  VDD_VALUE  3300U
+#define TICK_INT_PRIORITY            0x0FU
+#define USE_RTOS                     0U
+#define PREFETCH_ENABLE              1U
+#define INSTRUCTION_CACHE_ENABLE     1U
+#define DATA_CACHE_ENABLE            1U
 
 #define USE_HAL_ADC_REGISTER_CALLBACKS         0U
 #define USE_HAL_CAN_REGISTER_CALLBACKS         0U
@@ -36,9 +41,51 @@ extern "C" {
 #define HAL_TIM_MODULE_ENABLED
 #define HAL_UART_MODULE_ENABLED
 
-#define ASSERT(...)     do { } while(0)
+#ifdef HAL_RCC_MODULE_ENABLED
+  #include "stm32f4xx_hal_rcc.h"
+#endif
 
-#include "stm32f4xx_hal_def.h"
+#ifdef HAL_GPIO_MODULE_ENABLED
+  #include "stm32f4xx_hal_gpio.h"
+#endif
+
+#ifdef HAL_DMA_MODULE_ENABLED
+  #include "stm32f4xx_hal_dma.h"
+#endif
+
+#ifdef HAL_CORTEX_MODULE_ENABLED
+  #include "stm32f4xx_hal_cortex.h"
+#endif
+
+#ifdef HAL_ADC_MODULE_ENABLED
+  #include "stm32f4xx_hal_adc.h"
+#endif
+
+#ifdef HAL_DAC_MODULE_ENABLED
+  #include "stm32f4xx_hal_dac.h"
+#endif
+
+#ifdef HAL_ETH_MODULE_ENABLED
+  #include "stm32f4xx_hal_eth.h"
+#endif
+
+#ifdef HAL_FLASH_MODULE_ENABLED
+  #include "stm32f4xx_hal_flash.h"
+#endif
+
+#ifdef HAL_PWR_MODULE_ENABLED
+  #include "stm32f4xx_hal_pwr.h"
+#endif
+
+#ifdef HAL_TIM_MODULE_ENABLED
+  #include "stm32f4xx_hal_tim.h"
+#endif
+
+#ifdef HAL_UART_MODULE_ENABLED
+  #include "stm32f4xx_hal_uart.h"
+#endif
+
+#define assert_param(expr) ((void)0U)
 
 #ifdef __cplusplus
 }
