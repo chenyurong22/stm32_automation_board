@@ -41,15 +41,14 @@ jobs:
           git clone --depth 1 --branch ${HAL_VERSION} \
             https://github.com/STMicroelectronics/STM32CubeF4.git \
             /tmp/STM32CubeF4
-          cd /tmp/STM32CubeF4
-          git submodule update --init --depth 1 --recommend-shallow \
+          git -C /tmp/STM32CubeF4 submodule update --init --depth 1 --recommend-shallow \
             Drivers/STM32F4xx_HAL_Driver \
             Drivers/CMSIS
           echo "::endgroup::"
 
           echo "::group::Copy HAL driver"
-          cp -r /tmp/STM32CubeF4/Drivers/STM32F4xx_HAL_Driver/Src/*.c lib/stm32f4_hal/Src/
-          cp -r /tmp/STM32CubeF4/Drivers/STM32F4xx_HAL_Driver/Inc/*.h lib/stm32f4_hal/Inc/
+          cp /tmp/STM32CubeF4/Drivers/STM32F4xx_HAL_Driver/Src/*.c lib/stm32f4_hal/Src/
+          cp /tmp/STM32CubeF4/Drivers/STM32F4xx_HAL_Driver/Inc/*.h lib/stm32f4_hal/Inc/
           echo "::endgroup::"
 
           echo "::group::Copy CMSIS Device"
