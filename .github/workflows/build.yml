@@ -42,7 +42,8 @@ jobs:
             https://github.com/STMicroelectronics/STM32CubeF4.git \
             /tmp/STM32CubeF4
           git -C /tmp/STM32CubeF4 submodule update --init --depth 1 --recommend-shallow \
-            Drivers/STM32F4xx_HAL_Driver
+            Drivers/STM32F4xx_HAL_Driver \
+            Drivers/CMSIS/Device/ST/STM32F4xx
           echo "::endgroup::"
 
           echo "::group::Copy HAL driver"

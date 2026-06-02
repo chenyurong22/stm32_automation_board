@@ -17,7 +17,8 @@ git clone --depth 1 --branch "${HAL_VERSION}" \
     https://github.com/STMicroelectronics/STM32CubeF4.git "$TMPDIR/STM32CubeF4"
 
 git -C "$TMPDIR/STM32CubeF4" submodule update --init --depth 1 --recommend-shallow \
-    Drivers/STM32F4xx_HAL_Driver
+    Drivers/STM32F4xx_HAL_Driver \
+    Drivers/CMSIS/Device/ST/STM32F4xx
 
 mkdir -p "$HAL_DIR/Src"
 
