@@ -77,6 +77,7 @@ add_executable(${PROJECT_NAME}
 target_include_directories(${PROJECT_NAME} PRIVATE
     "inc"
     "${HAL_SRC_DIR}/Inc"
+    "${HAL_SRC_DIR}/Inc/CMSIS_Core"
 )
 
 target_link_options(${PROJECT_NAME} PRIVATE
