@@ -107,6 +107,31 @@ int main(void)
     }
 }
 
+static void rs485_modbus_rx_callback(uint8_t *data, uint16_t len)
+{
+    uint8_t response[MODBUS_RTU_FRAME_MAX];
+    uint16_t resp_len = 0;
+
+    modbus_rtu_process(data, len, response, &resp_len);
+    if (resp_len > 0) {
+        rs485_set_tx_mode();
+        for (volatile uint32_t i = 0; i < 1000; i++) { __NOP(); }
+        rs485_send(response, resp_len);
+        rs485_set_rx_mode();
+    }
+}
+
+static void eth_modbus_callback(uint8_t *data, uint16_t len)
+{
+    uint8_t response[MODBUS_TCP_MAX_ADU];
+    uint16_t resp_len = 0;
+
+    modbus_tcp_build_response(data, len, response, &resp_len);
+    if (resp_len > 0) {
+        ethernet_send(response, resp_len);
+    }
+}
+
 void NMI_Handler(void) { while (1); }
 void HardFault_Handler(void) { while (1); }
 void MemManage_Handler(void) { while (1); }
