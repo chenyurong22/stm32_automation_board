@@ -2,6 +2,9 @@
 
 volatile uint32_t sys_tick = 0;
 
+static void rs485_modbus_rx_callback(uint8_t *data, uint16_t len);
+static void eth_modbus_callback(uint8_t *data, uint16_t len);
+
 void SysTick_Handler(void)
 {
     sys_tick++;
