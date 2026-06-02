@@ -13,6 +13,7 @@ extern "C" {
 
 #define HSE_STARTUP_TIMEOUT     100U
 #define LSE_STARTUP_TIMEOUT     5000U
+#define EXTERNAL_CLOCK_VALUE    12288000U
 
 #define TICK_INT_PRIORITY            0x0FU
 #define USE_RTOS                     0U
