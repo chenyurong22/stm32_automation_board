@@ -1,0 +1,115 @@
+name: STM32 Automation Board - Build
+
+on:
+  push:
+    branches: [main, master, develop]
+    tags: ['v*']
+  pull_request:
+    branches: [main, master]
+
+env:
+  ARM_GCC_VERSION: "12.3.rel1"
+  ARM_GCC_URL: "https://developer.arm.com/-/media/Files/downloads/gnu/12.3.rel1/binrel/arm-gnu-toolchain-12.3.rel1-mingw-w64-i686-arm-none-eabi.zip"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        build_type: [Release, Debug]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up ARM GCC toolchain
+        run: |
+          TOOLCHAIN_FILE="arm-gnu-toolchain-12.3.rel1-x86_64-arm-none-eabi.tar.xz"
+          TOOLCHAIN_URL="https://developer.arm.com/-/media/Files/downloads/gnu/12.3.rel1/binrel/${TOOLCHAIN_FILE}"
+          wget -q "$TOOLCHAIN_URL" -O "$TOOLCHAIN_FILE"
+          sudo tar -xf "$TOOLCHAIN_FILE" -C /usr/share/
+          echo "/usr/share/arm-gnu-toolchain-12.3.rel1-x86_64-arm-none-eabi/bin" >> $GITHUB_PATH
+
+      - name: Download STM32CubeF4 HAL
+        run: |
+          HAL_VERSION="1.28.1"
+          HAL_URL="https://github.com/STMicroelectronics/STM32CubeF4/archive/refs/tags/v${HAL_VERSION}.tar.gz"
+          wget -q "$HAL_URL" -O stm32cube_f4.tar.gz
+          tar -xzf stm32cube_f4.tar.gz
+          mkdir -p lib/stm32f4_hal
+          cp -r STM32CubeF4-${HAL_VERSION}/Drivers/STM32F4xx_HAL_Driver/Src lib/stm32f4_hal/Src
+          cp -r STM32CubeF4-${HAL_VERSION}/Drivers/STM32F4xx_HAL_Driver/Inc lib/stm32f4_hal/Inc
+          cp STM32CubeF4-${HAL_VERSION}/Drivers/CMSIS/Device/ST/STM32F4xx/Source/Templates/system_stm32f4xx.c lib/stm32f4_hal/Src/
+          mkdir -p lib/stm32f4_hal/Inc/CMSIS_Device
+          cp STM32CubeF4-${HAL_VERSION}/Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h lib/stm32f4_hal/Inc/
+          cp STM32CubeF4-${HAL_VERSION}/Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f4xx.h lib/stm32f4_hal/Inc/
+          cp STM32CubeF4-${HAL_VERSION}/Drivers/CMSIS/Device/ST/STM32F4xx/Include/system_stm32f4xx.h lib/stm32f4_hal/Inc/
+          mkdir -p lib/stm32f4_hal/Inc/CMSIS_Core
+          cp STM32CubeF4-${HAL_VERSION}/Drivers/CMSIS/Include/*.h lib/stm32f4_hal/Inc/CMSIS_Core/
+          ls -la lib/stm32f4_hal/
+
+      - name: Verify toolchain
+        run: arm-none-eabi-gcc --version
+
+      - name: Configure CMake
+        run: |
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            -DCMAKE_TOOLCHAIN_FILE=cmake/arm-none-eabi-gcc.cmake
+
+      - name: Build
+        run: cmake --build build -j$(nproc)
+
+      - name: Show binary size
+        run: |
+          arm-none-eabi-size build/stm32_automation_board.elf || true
+          ls -la build/stm32_automation_board.*
+
+      - name: Upload firmware artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-${{ matrix.build_type }}
+          path: |
+            build/stm32_automation_board.elf
+            build/stm32_automation_board.hex
+            build/stm32_automation_board.bin
+            build/stm32_automation_board.map
+          retention-days: 30
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run cppcheck
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq cppcheck
+          cppcheck --enable=all --inconclusive --suppress=missingIncludeSystem \
+            --template='{file}:{line}: {severity}: {message} [{id}]' \
+            --error-exitcode=0 \
+            -I inc src/
+
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: firmware-Release
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            *.elf
+            *.hex
+            *.bin
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
