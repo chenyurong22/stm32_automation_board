@@ -114,8 +114,9 @@ static void rs485_modbus_rx_callback(uint8_t *data, uint16_t len)
 
     modbus_rtu_process(data, len, response, &resp_len);
     if (resp_len > 0) {
+        /* Spec: leave ≥ T3.5 silent interval before responding */
+        rs485_delay_t35();
         rs485_set_tx_mode();
-        for (volatile uint32_t i = 0; i < 1000; i++) { __NOP(); }
         rs485_send(response, resp_len);
         rs485_set_rx_mode();
     }
