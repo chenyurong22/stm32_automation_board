@@ -7,7 +7,14 @@ static void eth_modbus_callback(uint8_t *data, uint16_t len);
 
 void SysTick_Handler(void)
 {
+    /*
+     * Clear COUNTFLAG (read of CTRL) before bumping sys_tick so the
+     * RS485 µs timebase never double-counts a tick after this handler runs.
+     */
+    (void)SysTick->CTRL;
     sys_tick++;
+    /* Modbus RTU T3.5 soft timeout (portable SysTick timebase, no TIM6) */
+    rs485_on_systick();
 }
 
 uint32_t HAL_GetTick(void)
